@@ -9,16 +9,14 @@ import time
 import sys
 
 chrome_options = Options()
-chrome_options.headless = True
+# chrome_options.headless = True
 chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
 chrome_options.add_experimental_option("detach", False)
-# chrome_options.add_argument("--headless")
+chrome_options.add_argument("--headless")
 # WINDOW_SIZE = 720, 1080
 # chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
 
 DELAY = 1
-REGISTER_URL = "https://stepik.org/course/107397/promo?auth=registration"
-LOGIN_UR1L = "https://stepik.org/course/107397/promo?auth=login"
 ENROLLED = 0
 BASE_URL = "https://stepik.org/course/"
 DRIVER = webdriver.Chrome(chrome_options=chrome_options)
@@ -129,10 +127,14 @@ if __name__ == "__main__":
         reader = csv.reader(f)
         for row in reader:
             courses.append(row[0].strip())
+    amount = 0
     with open("data_base.csv", "r") as f:
         reader = csv.DictReader(f, delimiter=",")
+
         counter = 0
         for i, row in enumerate(reader):
+            if amount == 800:
+                break
             try:
                 DRIVER.close()
             except:
@@ -140,8 +142,10 @@ if __name__ == "__main__":
             # if row["EduForm"].strip().lower() not in ["заочная", "очно-заочная"]:
             #     continue
             counter += 1
-            if counter <= 2210:
+            if counter <= 77:
                 continue
+            amount += 1
+            print(amount)
             DRIVER = webdriver.Chrome(chrome_options=chrome_options)
             row["Mail"] = row["Mail"].replace("pfur", "rudn")
             CURRENT_PERSON = row["Fio"]
@@ -149,9 +153,11 @@ if __name__ == "__main__":
                 if not login(**row):
                     continue
             try:
+                time.sleep(1)
                 ENROLLED += sum(enroll(courses))
 
             except selenium.common.exceptions.NoSuchWindowException:
                 ...
 
             time.sleep(1)
+    DRIVER.quit()
