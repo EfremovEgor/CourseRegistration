@@ -7,12 +7,14 @@ import selenium
 import csv
 import time
 import sys
+import chromedriver_autoinstaller
 
+chromedriver_autoinstaller.install()
 chrome_options = Options()
 # chrome_options.headless = True
 chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
 chrome_options.add_experimental_option("detach", False)
-chrome_options.add_argument("--headless")
+# chrome_options.add_argument("--headless")
 # WINDOW_SIZE = 720, 1080
 # chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
 
@@ -128,8 +130,8 @@ if __name__ == "__main__":
         for row in reader:
             courses.append(row[0].strip())
     amount = 0
-    with open("data_base.csv", "r") as f:
-        reader = csv.DictReader(f, delimiter=",")
+    with open("data_base.csv", "r", encoding="UTF-8") as f:
+        reader = csv.DictReader(f, delimiter=";")
 
         counter = 0
         for i, row in enumerate(reader):
@@ -145,10 +147,11 @@ if __name__ == "__main__":
             if counter <= 77:
                 continue
             amount += 1
+            print(row)
             print(amount)
             DRIVER = webdriver.Chrome(chrome_options=chrome_options)
             row["Mail"] = row["Mail"].replace("pfur", "rudn")
-            CURRENT_PERSON = row["Fio"]
+            CURRENT_PERSON = row["\ufeffFio"]
             if not register(**row):
                 if not login(**row):
                     continue
