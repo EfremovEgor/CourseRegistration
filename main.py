@@ -7,9 +7,9 @@ import selenium
 import csv
 import time
 import sys
-import chromedriver_autoinstaller
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service as ChromeService
 
-chromedriver_autoinstaller.install()
 chrome_options = Options()
 # chrome_options.headless = True
 chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
@@ -21,7 +21,11 @@ chrome_options.add_experimental_option("detach", False)
 DELAY = 1
 ENROLLED = 0
 BASE_URL = "https://stepik.org/course/"
-DRIVER = webdriver.Chrome(chrome_options=chrome_options)
+print()
+DRIVER = webdriver.Chrome(
+    service=ChromeService(ChromeDriverManager().install()),
+    options=chrome_options,
+)
 REGISTRATION_URL = "https://stepik.org/registration"
 LOGIN_URL = "https://stepik.org/login"
 CURRENT_PERSON = None
@@ -31,6 +35,7 @@ def register(
     Fio: str = None, Mail: str = None, Password: str = None, *args, **kwargs
 ) -> bool:
     DRIVER.get(REGISTRATION_URL)
+    print("Trying to register user")
     try:
         WebDriverWait(DRIVER, 10).until(
             EC.presence_of_element_located(
@@ -43,16 +48,20 @@ def register(
 
     except selenium.common.exceptions.TimeoutException:
         return False
+    print("Found input with id: id_registration_full-name")
     try:
         DRIVER.find_element(By.ID, "id_registration_full-name").send_keys(Fio)
         DRIVER.find_element(By.ID, "id_registration_email").send_keys(Mail)
         DRIVER.find_element(By.ID, "id_registration_password").send_keys(Password)
         DRIVER.find_element(By.XPATH, '//*[@id="registration_form"]/button').click()
     except:
+        print("Error while accessing form inputs")
         return False
     time.sleep(2)
     if DRIVER.find_elements(By.XPATH, '//*[@id="registration_form"]/button'):
+        print("User already registered")
         return False
+    print("Successfully Registered user")
     return True
 
 
@@ -149,7 +158,10 @@ if __name__ == "__main__":
             amount += 1
             print(row)
             print(amount)
-            DRIVER = webdriver.Chrome(chrome_options=chrome_options)
+            DRIVER = webdriver.Chrome(
+                service=ChromeService(ChromeDriverManager().install()),
+                options=chrome_options,
+            )
             row["Mail"] = row["Mail"].replace("pfur", "rudn")
             CURRENT_PERSON = row["\ufeffFio"]
             if not register(**row):
